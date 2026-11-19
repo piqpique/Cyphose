@@ -87,20 +87,29 @@ Un exercice par famille, en rotation automatique d'une séance à l'autre :
 ## 4. Lecteur de séance
 
 - Un écran par exercice : illustration en grand, nom, 3 consignes, compteur (« répétition 4/10 », « côté droit », « série 2/2 »).
-- Chronomètre de tenue en grand, décompte des 3 dernières secondes, signal sonore court (Web Audio) et flash visuel en fin de tenue et en fin de repos. Son désactivable. Pas de vibration : Safari iOS ne gère pas l'API Vibration.
-- Boutons : pause, passer l'exercice, terminer la séance.
+- Mise en place avant chaque exercice : 10 s à la maison, 5 s en télétravail, 3 s au bureau.
+- Chronomètre de tenue en grand, décompte sonore des 3 dernières secondes (étapes de 5 s et plus), signal sonore court (Web Audio) et flash visuel en fin de tenue et en fin de repos. Pas de vibration : Safari iOS ne gère pas l'API Vibration.
+- Son désactivable. Le set discret du bureau est muet par défaut (réglage séparé).
+- Annonces vocales (maison et télétravail, désactivables) : nom de l'exercice, changements de côté ou de position, inspire/expire, repos entre séries, tenues de 10 s et plus.
+- Boutons : pause, étape suivante (« Je suis prêt » pendant la mise en place), exercice suivant, arrêter.
+- Arrêter : la séance se met en pause et propose « Enregistrer et terminer », « Abandonner sans enregistrer » ou « Continuer ». Sans exercice fait, rien n'est enregistré.
 - Écran allumé pendant la séance (Screen Wake Lock API ; à vérifier en mode écran d'accueil sur la version d'iOS de l'iPhone).
-- Fin de séance : durée réelle, exercices faits ou sautés, enregistrement automatique.
+- Séance en cours sauvegardée à chaque étape : si iOS ferme l'app, elle est proposée au retour (reprendre, enregistrer, abandonner).
+- Absence de plus de 5 min (écran verrouillé, autre app) : la séance se met en pause à l'heure du départ, pour ne pas compter comme faits des exercices non faits. En dessous, le chrono rattrape le temps écoulé.
+- Une nouvelle version de l'app ne recharge jamais la page pendant une séance : elle s'applique au retour à l'accueil.
+- Fin de séance : durée active (pauses exclues), exercices faits ou sautés, enregistrement automatique, bouton « Supprimer cette séance ».
 
 ## 5. Suivi
 
 Chaque séance enregistrée : date et heure, type (maison complète, maison courte, bureau, télétravail), durée, exercices faits ou sautés, origine (lien d'un rappel ou lancement manuel).
 
 Écran Historique :
-- Semaine en cours : séances maison faites sur 7 (objectif 5), micro-séances faites sur le nombre de créneaux prévus (calculé depuis le planning, hors jours marqués congé).
-- Graphique par semaine depuis le début : barres « maison » et « micro-séances ».
+- Une séance compte dans les statistiques si au moins un exercice a été fait.
+- Semaine en cours : jours avec routine maison sur 7 (objectif 5, ou 3 à 4 en phase 4), micro-séances faites sur le nombre de créneaux prévus (calculé depuis le planning, hors jours marqués congé).
+- Deux graphiques par semaine depuis le début (un seul axe chacun) : jours de routine maison (ligne d'objectif), part des créneaux de micro-séance tenus (%). Valeur au toucher et tableau des chiffres.
 - Série de jours consécutifs avec une routine maison.
 - Total par exercice.
+- Liste des séances, avec suppression d'une séance (confirmation demandée).
 
 ## 6. Progression par phases
 
@@ -113,7 +122,7 @@ Phase courante affichée sur l'accueil. Les doses de la séance dépendent de la
 | 3. Intégration | 13-24 | Routine complète 5 j/7, variantes les plus dures | Posture redressée tenue sans y penser |
 | 4. Entretien | après 24 | Version courte 3-4 fois/semaine | Retour en phase 2 si le dos s'arrondit à nouveau |
 
-L'app propose le passage de phase quand la durée minimale est atteinte. C'est l'utilisateur qui valide le critère.
+L'app propose le passage de phase quand la durée minimale est atteinte. C'est l'utilisateur qui valide le critère ; « Pas encore » repousse la proposition de 7 jours. En phase 4, un bouton des réglages permet de revenir en phase 2.
 
 ## 7. Écrans
 
@@ -131,6 +140,8 @@ L'app propose le passage de phase quand la durée minimale est atteinte. C'est l
 - L'historique survit à la fermeture de l'app et à une nouvelle version de l'app.
 - L'app installée fonctionne en mode avion.
 - Export des données en CSV depuis les réglages.
+- Arrêter une séance puis « Abandonner » n'enregistre rien et ne fait pas avancer la rotation télétravail.
+- Une séance interrompue (app fermée, rechargée) peut être reprise là où elle en était.
 
 ## 9. Hors périmètre
 

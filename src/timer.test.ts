@@ -2,7 +2,21 @@ import { describe, expect, test } from 'vitest';
 import { EXERCISES } from './exercises';
 import { buildPlan } from './routines';
 import { buildSegments, totalSeconds, type Segment } from './segments';
-import { advance, currentSegment, elapsedSeconds, finishRun, pause, remaining, resume, skipExercise, startRun } from './timer';
+import {
+  activeMs,
+  advance,
+  currentSegment,
+  elapsedSeconds,
+  finishRun,
+  pause,
+  remaining,
+  remainingTotal,
+  resume,
+  resumeAfterAbsence,
+  skipExercise,
+  skipSegment,
+  startRun,
+} from './timer';
 import { DEFAULT_PLANNING, DEFAULT_SCHEDULE, dayKind, fmtMin, microSlots, nextSlot } from './schedule';
 
 const seg = (seconds: number, kind: Segment['kind'] = 'work'): Segment => ({ kind, label: '', counter: '', seconds });
@@ -51,6 +65,42 @@ describe('moteur de séance', () => {
   test('terminer marque le reste sauté', () => {
     expect(finishRun(startRun(plan, 0)).statuses).toEqual(['skipped', 'skipped']);
   });
+
+  test('étape suivante : passe le segment sans sauter l’exercice', () => {
+    let r = skipSegment(startRun(plan, 0), 1_000);
+    expect(r.state.seg).toBe(1);
+    expect(remaining(r.state, 1_000)).toBeCloseTo(3);
+    r = skipSegment(r.state, 2_000);
+    expect(r.state.ex).toBe(1);
+    expect(r.state.statuses).toEqual(['done', 'pending']);
+    expect(r.events[0]).toEqual({ type: 'segmentEnd', kind: 'rest' });
+  });
+
+  test('temps restant de la séance', () => {
+    expect(remainingTotal(startRun(plan, 0), 2_000)).toBeCloseTo(16);
+  });
+
+  test('durée active : pauses exclues', () => {
+    let s = startRun(plan, 0);
+    s = pause(s, 4_000);
+    s = resume(s, 64_000); // 1 min de pause
+    expect(activeMs(s, 0, 70_000)).toBe(10_000);
+    expect(activeMs(pause(s, 70_000), 0, 100_000)).toBe(10_000);
+  });
+
+  test('absence courte : le chrono rattrape', () => {
+    const r = resumeAfterAbsence(startRun(plan, 0), 2_000, 60_000, 300_000);
+    expect(r.autoPaused).toBe(false);
+    expect(advance(r.state, 60_000).state.finished).toBe(true);
+  });
+
+  test('absence longue : pause à l’heure du départ, rien n’est compté comme fait', () => {
+    const r = resumeAfterAbsence(startRun(plan, 0), 2_000, 2_000 + 600_000, 300_000);
+    expect(r.autoPaused).toBe(true);
+    expect(r.state.pausedAt).toBe(2_000);
+    expect(r.state.statuses).toEqual(['pending', 'pending']);
+    expect(remaining(r.state, 999_999)).toBeCloseTo(3);
+  });
 });
 
 describe('segments', () => {
@@ -59,8 +109,8 @@ describe('segments', () => {
     expect(segs.filter((s) => s.kind === 'work')).toHaveLength(20);
     expect(segs.filter((s) => s.kind === 'work').every((s) => s.seconds === 5)).toBe(true);
     expect(segs.find((s) => s.label === 'Repos entre séries')?.seconds).toBe(30);
-    // prép 5 + 2 × (10 × 5 + 9 × 5) + 30
-    expect(totalSeconds(segs)).toBe(5 + 2 * 95 + 30);
+    // mise en place 10 + 2 × (10 × 5 + 9 × 5) + 30
+    expect(totalSeconds(segs)).toBe(10 + 2 * 95 + 30);
   });
 
   test('Y-T-W : 2 tours × 8 par lettre', () => {
@@ -91,10 +141,18 @@ describe('segments', () => {
 describe('routines', () => {
   test('routine complète ≈ 18 min', () => {
     const { items } = buildPlan('maison', 1);
-    const min = items.reduce((t, i) => t + totalSeconds(buildSegments(i.dose)), 0) / 60;
+    const min = items.reduce((t, i) => t + totalSeconds(buildSegments(i.dose, i.prep)), 0) / 60;
     expect(items).toHaveLength(8);
     expect(min).toBeGreaterThan(14);
     expect(min).toBeLessThan(22);
+  });
+
+  test('micro-séances courtes : mise en place réduite', () => {
+    const secs = (t: 'bureau' | 'teletravail') =>
+      buildPlan(t, 1).items.reduce((sum, i) => sum + totalSeconds(buildSegments(i.dose, i.prep)), 0);
+    expect(buildPlan('bureau', 1).items.every((i) => i.prep === 3)).toBe(true);
+    expect(secs('bureau')).toBeLessThan(150);
+    expect(secs('teletravail')).toBeLessThan(180);
   });
 
   test('routine courte garde Y-T-W et cobra', () => {

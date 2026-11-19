@@ -11,14 +11,15 @@ export interface Segment {
   seconds: number;
 }
 
-const PREP = 5;
+/** Mise en place avant chaque exercice ; « Je suis prêt » permet de l'écourter. */
+const PREP = 10;
 const SWITCH = 5;
 const join = (...parts: (string | false | undefined)[]) => parts.filter(Boolean).join(' · ');
 const of = (i: number, n: number) => `${i + 1}/${n}`;
 
 /** Transforme une dose en suite de segments chronométrés, préparation incluse. */
-export function buildSegments(dose: Dose): Segment[] {
-  const out: Segment[] = [{ kind: 'prep', label: 'Mise en place', counter: '', seconds: PREP }];
+export function buildSegments(dose: Dose, prep = PREP): Segment[] {
+  const out: Segment[] = [{ kind: 'prep', label: 'Mise en place', counter: '', seconds: prep }];
   const push = (s: Segment) => {
     if (s.seconds > 0) out.push(s);
   };

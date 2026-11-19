@@ -1,12 +1,14 @@
-/** Son (Web Audio) et écran allumé (Wake Lock). Safari iOS ne gère pas la vibration. */
+/**
+ * Son (Web Audio), voix (synthèse vocale) et écran allumé (Wake Lock).
+ * Safari iOS ne gère pas la vibration.
+ */
 
 let ctx: AudioContext | null = null;
 
-/** À appeler depuis un geste (toucher) : iOS n'autorise le son qu'après une interaction. */
+/** À appeler pendant un toucher : iOS n'autorise le son qu'après une interaction. */
 export function unlockAudio() {
   ctx ??= new AudioContext();
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-  // Son muet pour débloquer la sortie audio sur iOS.
+  if (ctx.state !== 'running') ctx.resume().catch(() => {});
   beep(1, 0.01, 0);
 }
 
@@ -17,11 +19,35 @@ export function beep(freq: number, dur = 0.12, volume = 0.25) {
   osc.frequency.value = freq;
   osc.type = 'sine';
   const t = ctx.currentTime;
-  gain.gain.setValueAtTime(volume, t);
+  gain.gain.setValueAtTime(Math.max(volume, 0.0001), t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   osc.connect(gain).connect(ctx.destination);
   osc.start(t);
   osc.stop(t + dur + 0.02);
+}
+
+let voice: SpeechSynthesisVoice | null | undefined;
+
+function frenchVoice(): SpeechSynthesisVoice | null {
+  if (voice !== undefined && voice !== null) return voice;
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null; // pas encore chargées : la voix par défaut fera l'affaire
+  voice = voices.find((v) => v.lang === 'fr-FR' && v.localService) ?? voices.find((v) => v.lang.startsWith('fr')) ?? null;
+  return voice;
+}
+
+/** Annonce vocale courte. Les annonces s'enchaînent dans l'ordre. */
+export function speak(text: string) {
+  if (!text || !('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR';
+  const v = frenchVoice();
+  if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+export function stopSpeech() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
 }
 
 let lock: WakeLockSentinel | null = null;
@@ -44,9 +70,9 @@ export async function keepAwake(on: boolean) {
   }
 }
 
-/** Le verrou est perdu quand l'app passe en arrière-plan : on le reprend au retour. */
+/** Au retour dans l'app : iOS a relâché l'écran allumé et peut avoir suspendu le son. */
 document.addEventListener('visibilitychange', () => {
-  if (wanted && document.visibilityState === 'visible') acquire();
+  if (document.visibilityState !== 'visible') return;
+  if (wanted) acquire();
+  if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
 });
-
-export const wakeLockSupported = () => 'wakeLock' in navigator;

@@ -73,7 +73,7 @@ export function buildSegments(dose: Dose): Segment[] {
       blocks.forEach((b, bi) => {
         for (let r = 0; r < reps; r++) {
           const counter = join(
-            b.pos && `Position ${b.pos}`,
+            b.pos && b.pos[0].toUpperCase() + b.pos.slice(1),
             b.side && `Côté ${b.side}`,
             reps > 1 && `Répétition ${of(r, reps)}`,
           );
@@ -82,7 +82,7 @@ export function buildSegments(dose: Dose): Segment[] {
           if (last) continue;
           if (r === reps - 1) {
             const nb = blocks[bi + 1];
-            const label = nb.pos !== b.pos ? `Change : position ${nb.pos}` : `Change de côté`;
+            const label = nb.pos !== b.pos ? `Change : ${nb.pos}` : `Change de côté`;
             push({ kind: 'switch', label, counter: '', seconds: SWITCH });
           } else push({ kind: 'rest', label: 'Relâche', counter, seconds: dose.rest ?? 10 });
         }

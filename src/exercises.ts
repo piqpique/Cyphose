@@ -5,7 +5,7 @@
  * entre deux répétitions, on met 2 s (juste le temps de relâcher).
  *
  * Consignes et « erreur à éviter » : BROUILLON à faire valider (kiné).
- * Elles reprennent les indications de la spec quand il y en a.
+ * Elles reprennent les indications de la spec et des illustrations (public/illustrations/).
  */
 
 export type Phase = 1 | 2 | 3 | 4;
@@ -70,9 +70,9 @@ export const EXERCISES: Record<string, Exercise> = {
     name: 'Respiration 90/90, menton rentré',
     illustration: 'resp.svg',
     cues: [
-      'Sur le dos, jambes à 90° posées sur une chaise.',
-      'Menton rentré, nuque longue.',
-      'Inspire par le nez en gonflant les côtes, expire longuement.',
+      'Sur le dos, pieds à plat au mur, hanches et genoux à 90°.',
+      'Nuque à plat, menton rentré.',
+      'Inspire 4 s par le nez dans le haut du dos, expire 6 s.',
     ],
     avoid: 'Lever les épaules à l’inspiration.',
     doses: { 1: { kind: 'breaths', cycles: 5, inhale: 4, exhale: 6, sets: 2 } },
@@ -82,8 +82,8 @@ export const EXERCISES: Record<string, Exercise> = {
     name: 'Extension sur rouleau',
     illustration: 'rouleau.svg',
     cues: [
-      'Rouleau sous le haut du dos, mains derrière la tête.',
-      'Étends le haut du dos par-dessus le rouleau.',
+      'Rouleau sous les omoplates, fesses au sol, mains derrière la tête.',
+      'Bascule par-dessus le rouleau en expirant.',
       'Change de niveau en remontant le rouleau.',
     ],
     avoid: 'Cambrer le bas du dos : garde les côtes basses.',
@@ -106,7 +106,7 @@ export const EXERCISES: Record<string, Exercise> = {
     cues: [
       'Allongé sur le côté, genoux pliés à 90°, bras tendus devant.',
       'Ouvre le bras du dessus vers l’arrière en suivant la main des yeux.',
-      'Les genoux restent collés.',
+      'Les genoux restent posés.',
     ],
     avoid: 'Décoller les genoux pour aller plus loin.',
     doses: { 1: { kind: 'perSide', reps: 8, hold: 2, rest: 2 } },
@@ -117,8 +117,8 @@ export const EXERCISES: Record<string, Exercise> = {
     illustration: 'ytw.svg',
     cues: [
       'À plat ventre, front sur une serviette.',
-      'Décolle les bras en dessinant la lettre, pouces vers le ciel.',
-      'Omoplates vers les poches arrière.',
+      'Décolle les bras en dessinant la lettre, pouces vers le plafond.',
+      'Épaules basses, omoplates vers le bas.',
     ],
     avoid: 'Cambrer ou hausser les épaules.',
     doses: {
@@ -137,7 +137,7 @@ export const EXERCISES: Record<string, Exercise> = {
     illustration: 'cobra.svg',
     cues: [
       'À plat ventre, bras le long du corps.',
-      'Décolle le haut du buste, menton rentré, regard au sol.',
+      'Le sternum monte, le nombril reste au sol, regard au sol.',
       'Serre les omoplates.',
     ],
     avoid: 'Cambrer ou hausser les épaules.',
@@ -152,8 +152,8 @@ export const EXERCISES: Record<string, Exercise> = {
     illustration: 'anges.svg',
     cues: [
       'Dos, tête et bras contre le mur.',
-      'Monte les bras en gardant le contact avec le mur.',
-      'Redescends lentement, coudes vers les poches.',
+      'Bras en W, monte en Y en gardant le contact avec le mur.',
+      'Redescends lentement en W.',
     ],
     avoid: 'Décoller le bas du dos du mur.',
     doses: { 1: { kind: 'holds', reps: 8, hold: 4, rest: 4, sets: 2, holdLabel: 'Monte', restLabel: 'Descends' } },
@@ -163,12 +163,12 @@ export const EXERCISES: Record<string, Exercise> = {
     name: 'Étirement à la porte',
     illustration: 'porte.svg',
     cues: [
-      'Avant-bras contre le cadre de la porte.',
-      'Avance doucement le buste jusqu’à sentir l’étirement des pectoraux.',
+      'Avant-bras contre le cadre, coude à hauteur d’épaule, puis vers 120°.',
+      'Fais un pas en avant : le corps avance, l’épaule reste en arrière.',
       'Respire calmement.',
     ],
     avoid: 'Pousser jusqu’à la douleur ou cambrer.',
-    doses: { 1: { kind: 'simpleHold', seconds: 30, rest: 5, sides: true, positions: ['basse', 'haute'] } },
+    doses: { 1: { kind: 'simpleHold', seconds: 30, rest: 5, sides: true, positions: ['coude à l’épaule', 'coude à 120°'] } },
   },
   elong: {
     id: 'elong',
@@ -176,8 +176,8 @@ export const EXERCISES: Record<string, Exercise> = {
     illustration: 'elong.svg',
     cues: [
       'Debout, pousse le sommet du crâne vers le plafond.',
-      'Menton légèrement rentré, épaules basses.',
-      'Respire sans relâcher la hauteur.',
+      'Menton rentré, sternum haut, sans cambrer.',
+      'Puis relâche d’environ 30 % et tiens cette hauteur en respirant.',
     ],
     avoid: 'Lever le menton.',
     doses: { 1: { kind: 'simpleHold', seconds: 20, reps: 5, rest: 10 } },
@@ -189,8 +189,8 @@ export const EXERCISES: Record<string, Exercise> = {
     name: 'Extension sur le dossier',
     illustration: 'dossier.svg',
     cues: [
-      'Assis au fond de la chaise, mains sur les cuisses.',
-      'Étends le haut du dos par-dessus le dossier.',
+      'Bassin au fond du siège, dossier sous les omoplates, mains sur les cuisses.',
+      'Le haut du dos passe par-dessus le dossier.',
       'Reviens lentement.',
     ],
     avoid: 'Mettre les mains derrière la tête.',
@@ -201,9 +201,9 @@ export const EXERCISES: Record<string, Exercise> = {
     name: 'Appui sur le bureau',
     illustration: 'bureau.svg',
     cues: [
-      'Mains sur le bureau, recule les pieds.',
-      'Laisse la poitrine descendre vers le sol, bras tendus.',
-      'Remonte lentement.',
+      'Avant-bras posés sur le bureau, recule les pieds.',
+      'Hanches au-dessus des pieds.',
+      'En expirant, la poitrine descend entre les bras.',
     ],
     avoid: 'Creuser le bas du dos.',
     doses: { 1: { kind: 'holds', reps: 5, hold: 5, rest: 2 } },
@@ -213,7 +213,7 @@ export const EXERCISES: Record<string, Exercise> = {
     name: 'Menton rentré, omoplates dans les poches',
     illustration: 'menton.svg',
     cues: [
-      'Recule le menton comme pour faire un double menton.',
+      'La tête recule : double menton, sans baisser la tête.',
       'Glisse les omoplates vers les poches arrière.',
       'Relâche entre deux.',
     ],
@@ -226,8 +226,8 @@ export const EXERCISES: Record<string, Exercise> = {
     illustration: 'anges.svg',
     cues: [
       'Dos, tête et bras contre le mur.',
-      'Monte les bras en gardant le contact avec le mur.',
-      'Redescends lentement.',
+      'Bras en W, monte en Y en gardant le contact avec le mur.',
+      'Redescends lentement en W.',
     ],
     avoid: 'Décoller le bas du dos du mur.',
     doses: { 1: { kind: 'holds', reps: 8, hold: 4, rest: 4, holdLabel: 'Monte', restLabel: 'Descends' } },
@@ -238,7 +238,7 @@ export const EXERCISES: Record<string, Exercise> = {
     illustration: 'rotation.svg',
     cues: [
       'Assis droit, bras croisés sur la poitrine.',
-      'Tourne le buste, le bassin reste face au bureau.',
+      'Les épaules tournent, genoux et bassin restent fixes.',
       'Reviens au centre.',
     ],
     avoid: 'Tourner le bassin avec le buste.',
@@ -249,12 +249,12 @@ export const EXERCISES: Record<string, Exercise> = {
     name: 'Étirement à la porte',
     illustration: 'porte.svg',
     cues: [
-      'Avant-bras contre le cadre de la porte.',
-      'Avance doucement le buste jusqu’à sentir l’étirement.',
+      'Avant-bras contre le cadre, coude à hauteur d’épaule, puis vers 120°.',
+      'Fais un pas en avant : le corps avance, l’épaule reste en arrière.',
       'Respire calmement.',
     ],
     avoid: 'Pousser jusqu’à la douleur.',
-    doses: { 1: { kind: 'simpleHold', seconds: 30, rest: 5, sides: true, positions: ['basse', 'haute'] } },
+    doses: { 1: { kind: 'simpleHold', seconds: 30, rest: 5, sides: true, positions: ['coude à l’épaule', 'coude à 120°'] } },
   },
   B7: {
     id: 'B7',
@@ -262,8 +262,8 @@ export const EXERCISES: Record<string, Exercise> = {
     illustration: 'elong.svg',
     cues: [
       'Assis, pousse le sommet du crâne vers le plafond.',
-      'Menton légèrement rentré, épaules basses.',
-      'Respire sans relâcher la hauteur.',
+      'Menton rentré, sternum haut, sans cambrer.',
+      'Puis relâche d’environ 30 % et tiens cette hauteur en respirant.',
     ],
     avoid: 'Lever le menton.',
     doses: { 1: { kind: 'simpleHold', seconds: 20 } },

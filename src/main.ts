@@ -139,6 +139,8 @@ async function renderHome() {
           .join('')}</select>
       </label>
       <label class="row">Son <input type="checkbox" id="sound" ${settings.sound ? 'checked' : ''}></label>
+      <details><summary>Les 4 phases</summary><figure class="illus"><img src="./illustrations/phases.svg" alt="Les 4 phases du protocole et leurs critères de passage"></figure></details>
+      <details><summary>Réglage du poste de travail</summary><figure class="illus"><img src="./illustrations/poste.svg" alt="Réglage du poste : haut de l’écran au niveau des yeux, dos contre le dossier"></figure></details>
     </section>
   </main>`;
 
@@ -277,10 +279,7 @@ function renderPlayer() {
       <button class="link" id="stop">Terminer</button>
     </header>
 
-    <div class="illus" aria-label="Illustration provisoire">
-      <span>Illustration à venir</span>
-      <small>${esc(ex.illustration)}</small>
-    </div>
+    <figure class="illus"><img src="./illustrations/${esc(ex.illustration)}" alt="Illustration : ${esc(ex.name)}"></figure>
 
     <h1 class="exname">${esc(ex.name)}</h1>
     ${item.dose.note ? `<p class="note">${esc(item.dose.note)}</p>` : ''}

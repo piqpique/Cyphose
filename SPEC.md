@@ -4,7 +4,7 @@ App mobile personnelle (un seul utilisateur, pas de compte, pas de serveur) pour
 
 ## Choix techniques
 
-- Plateforme : **PWA** (Vite + TypeScript, sans framework), installée sur l'iPhone via Safari → Partager → « Sur l'écran d'accueil ». Hébergée gratuitement sur GitHub Pages (`https://piqpique.github.io/cyphose/`), fonctionne hors ligne grâce au service worker.
+- Plateforme : **PWA** (Vite + TypeScript, sans framework), installée sur l'iPhone via Safari → Partager → « Sur l'écran d'accueil ». Hébergée gratuitement sur GitHub Pages (`https://piqpique.github.io/Cyphose/`), fonctionne hors ligne grâce au service worker.
 - Raison : pas de Mac ni de compte Apple Developer payant. Une app Expo ne peut pas tourner au quotidien sans l'un des deux.
 - Conséquence : une PWA iOS ne peut pas programmer de notifications locales. Les rappels sont délégués au **Calendrier iOS** via un fichier `.ics` généré par l'app (voir section 2).
 - Stockage local : IndexedDB, avec demande de stockage persistant (`navigator.storage.persist()`). Aucune donnée ne sort du téléphone. L'export CSV sert de sauvegarde.
@@ -31,7 +31,7 @@ L'app calcule les créneaux et génère un fichier `.ics` à importer une fois d
 - Plage de midi sans créneau, réglable (défaut 12h15-13h45).
 - Un événement récurrent hebdomadaire par créneau et par jour, selon le planning par défaut, avec une alerte à l'heure de l'événement.
 - Titre de l'événement selon le type du jour : « 2 min discrètes : menton, omoplates, dossier » (bureau) ou « Micro-séance de 3 min » (télétravail).
-- Chaque événement contient le lien vers la bonne séance (`…/cyphose/?seance=bureau&origine=rappel`).
+- Chaque événement contient le lien vers la bonne séance (`…/Cyphose/?seance=bureau&origine=rappel`).
 - Rappel séparé pour la routine maison : 1 événement par jour, heure réglable (défaut 19h00), 7 jours sur 7.
 - Après un changement de planning ou d'horaires, l'app propose de régénérer le fichier. L'utilisateur supprime l'ancien calendrier et importe le nouveau. L'app explique ces étapes à l'écran.
 - Jours de congé ponctuels : l'app ne peut pas couper les alertes. L'utilisateur les ignore ou active un mode Concentration. L'écran d'accueil affiche quand même « Congé, pas de micro-séance ».

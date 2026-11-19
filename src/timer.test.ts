@@ -104,14 +104,14 @@ describe('moteur de séance', () => {
 });
 
 describe('segments', () => {
-  test('cobra phase 1 : 2 × 10, tenue 5 s, relâche 3 s, repos entre séries 30 s', () => {
+  test('cobra phase 1 : 2 × 10, tenue 5 s, relâche 3 s, repos entre séries 5 s', () => {
     const segs = buildSegments(EXERCISES.cobra.doses[1]);
     expect(segs.filter((s) => s.kind === 'work')).toHaveLength(20);
     expect(segs.filter((s) => s.kind === 'work').every((s) => s.seconds === 5)).toBe(true);
     expect(segs.filter((s) => s.label === 'Relâche').every((s) => s.seconds === 3)).toBe(true);
-    expect(segs.find((s) => s.label === 'Repos entre séries')?.seconds).toBe(30);
-    // mise en place 10 + 2 × (10 × 5 + 9 × 3) + 30
-    expect(totalSeconds(segs)).toBe(10 + 2 * 77 + 30);
+    expect(segs.find((s) => s.label === 'Repos entre séries')?.seconds).toBe(5);
+    // mise en place 10 + 2 × (10 × 5 + 9 × 3) + 5
+    expect(totalSeconds(segs)).toBe(10 + 2 * 77 + 5);
   });
 
   test('Y-T-W : 2 tours × 8 par lettre', () => {

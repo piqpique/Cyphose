@@ -63,7 +63,7 @@ const ytwPhase1: Dose = {
   positionLabel: 'Lettre',
 };
 
-const cobraPhase1: Dose = { kind: 'holds', reps: 10, hold: 5, rest: 3, sets: 2 };
+const cobraPhase1: Dose = { kind: 'holds', reps: 10, hold: 5, rest: 3, sets: 2, setRest: 5 };
 
 export const EXERCISES: Record<string, Exercise> = {
   resp: {
@@ -181,7 +181,7 @@ export const EXERCISES: Record<string, Exercise> = {
       'Puis relâche d’environ 30 % et tiens cette hauteur en respirant.',
     ],
     avoid: 'Lever le menton.',
-    doses: { 1: { kind: 'simpleHold', seconds: 20, reps: 5, rest: 10 } },
+    doses: { 1: { kind: 'simpleHold', seconds: 20, reps: 5, rest: 5 } },
   },
 
   // Micro-séances bureau / télétravail

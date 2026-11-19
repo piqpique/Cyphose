@@ -54,7 +54,7 @@ describe('voix à chaque changement d’état', () => {
     expect(said('openbook')).toContain('Change de côté');
     expect(said('porte')[0]).toBe('Tiens, 30 secondes');
     expect(said('porte')).toContain('Change : coude à 120 degrés');
-    expect(said('elong').slice(0, 2)).toEqual(['Tiens, 20 secondes', 'Relâche, 10 secondes']);
+    expect(said('elong').slice(0, 2)).toEqual(['Tiens, 20 secondes', 'Relâche']);
   });
 });
 

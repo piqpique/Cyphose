@@ -60,10 +60,10 @@ Types de dose à gérer par le chronomètre :
 | 2 | Extension sur rouleau | rouleau.svg | 3 niveaux × 5, tenue 3 s |
 | 3 | Open book | openbook.svg | 8 par côté, tenue 2 s |
 | 4 | Y-T-W à plat ventre | ytw.svg | 2 tours × 8 par lettre, tenue 3 s, 10 s de repos entre les tours |
-| 5 | Cobra thoracique | cobra.svg | 2 × 10, tenue 5 s, relâche 3 s |
+| 5 | Cobra thoracique | cobra.svg | 2 × 10, tenue 5 s, relâche 3 s, 5 s de repos entre les séries |
 | 6 | Anges au mur | anges.svg | 2 × 8, 4 s montée / 4 s descente |
 | 7 | Étirement à la porte | porte.svg | 30 s × 2 hauteurs × 2 côtés |
-| 8 | Auto-élongation debout | elong.svg | 5 × 20 s |
+| 8 | Auto-élongation debout | elong.svg | 5 × 20 s, relâche 5 s |
 
 ### Routine maison courte (8 min)
 

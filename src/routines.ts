@@ -1,4 +1,5 @@
 import { doseFor, EXERCISES, type Dose, type Phase } from './exercises';
+import { prepSeconds, prepSpeech } from './speech';
 
 export type SessionType = 'maison' | 'maison-courte' | 'bureau' | 'teletravail';
 
@@ -43,10 +44,13 @@ export function buildPlan(
   phase: Phase,
   rotation: RotationState = INITIAL_ROTATION,
   today = '',
+  /** voice : la voix explique chaque exercice pendant la mise en place, qui dure alors le temps de l'explication. */
+  opts: { voice?: boolean } = {},
 ): { items: PlanItem[]; rotation: RotationState } {
   const item = (id: string, override?: Partial<Dose>): PlanItem => {
     const base = doseFor(EXERCISES[id], phase);
-    return { exerciseId: id, dose: { ...base, ...override } as Dose, prep: PREP[type] };
+    const prep = opts.voice ? prepSeconds(PREP[type], prepSpeech(EXERCISES[id])) : PREP[type];
+    return { exerciseId: id, dose: { ...base, ...override } as Dose, prep };
   };
   switch (type) {
     case 'maison':

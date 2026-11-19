@@ -23,10 +23,12 @@ export type Dose =
       positionLabel?: string;
       holdLabel?: string;
       restLabel?: string;
+      /** La voix annonce chaque tenue et chaque relâchement (« Étends », « Relâche »). */
+      voiceReps?: boolean;
       note?: string;
     }
   /** n répétitions côté gauche, puis « change de côté ». hold = durée d'une répétition. */
-  | { kind: 'perSide'; reps: number; hold: number; rest: number; sets?: number; setRest?: number; note?: string }
+  | { kind: 'perSide'; reps: number; hold: number; rest: number; sets?: number; setRest?: number; voiceReps?: boolean; note?: string }
   /** Tenue simple de x s, × répétitions, × positions, × côtés. */
   | {
       kind: 'simpleHold';
@@ -75,7 +77,7 @@ export const EXERCISES: Record<string, Exercise> = {
       'Inspire 4 s par le nez dans le haut du dos, expire 6 s.',
     ],
     avoid: 'Lever les épaules à l’inspiration.',
-    doses: { 1: { kind: 'breaths', cycles: 5, inhale: 4, exhale: 6, sets: 2 } },
+    doses: { 1: { kind: 'breaths', cycles: 5, inhale: 4, exhale: 6, sets: 2, setRest: 5 } },
   },
   rouleau: {
     id: 'rouleau',
@@ -96,6 +98,7 @@ export const EXERCISES: Record<string, Exercise> = {
         positions: ['bas', 'milieu', 'haut'],
         positionLabel: 'Niveau',
         holdLabel: 'Étends',
+        voiceReps: true,
       },
     },
   },

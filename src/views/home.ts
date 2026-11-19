@@ -7,7 +7,8 @@ import { weekStats } from '../stats';
 import { app, bindTabs, esc, fmtDay, fmtMinutes, tabbar, toast } from '../ui';
 import { openSession, planDuration } from './player';
 
-const durationOf = (type: SessionType) => fmtMinutes(planDuration(buildPlan(type, settings.phase, settings.rotation).items));
+const durationOf = (type: SessionType) =>
+  fmtMinutes(planDuration(buildPlan(type, settings.phase, settings.rotation, '', { voice: settings.voice && type !== 'bureau' }).items));
 
 export async function renderHome() {
   const now = new Date();

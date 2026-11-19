@@ -36,19 +36,32 @@ function frenchVoice(): SpeechSynthesisVoice | null {
   return voice;
 }
 
-/** Annonce vocale courte. Les annonces s'enchaînent dans l'ordre. */
-export function speak(text: string) {
+let lastCancel = 0;
+
+/**
+ * Annonce vocale. Les annonces s'enchaînent dans l'ordre ; `interrupt` coupe d'abord
+ * celle en cours (nouvel exercice). Juste après une coupure, Safari peut ignorer
+ * l'annonce suivante : on la décale de 250 ms.
+ */
+export function speak(text: string, opts: { interrupt?: boolean } = {}) {
   if (!text || !('speechSynthesis' in window)) return;
+  if (opts.interrupt && (speechSynthesis.speaking || speechSynthesis.pending)) stopSpeech();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'fr-FR';
   const v = frenchVoice();
   if (v) u.voice = v;
-  speechSynthesis.speak(u);
+  const wait = 250 - (Date.now() - lastCancel);
+  if (wait > 0) setTimeout(() => speechSynthesis.speak(u), wait);
+  else speechSynthesis.speak(u);
 }
 
 export function stopSpeech() {
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  lastCancel = Date.now();
 }
+
+export const isSpeaking = () => 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending);
 
 let lock: WakeLockSentinel | null = null;
 let wanted = false;

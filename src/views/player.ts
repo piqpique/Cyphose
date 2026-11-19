@@ -1,10 +1,11 @@
 import { addSession, deleteSession, kvDel, kvSet, type SessionRecord } from '../db';
-import { beep, keepAwake, speak, stopSpeech, unlockAudio } from '../device';
+import { beep, isSpeaking, keepAwake, speak, stopSpeech, unlockAudio } from '../device';
 import { EXERCISES } from '../exercises';
 import { buildPlan, SESSION_LABELS, SESSION_SHORT, type PlanItem, type RotationState, type SessionType } from '../routines';
 import { navigate } from '../router';
 import { isoDate } from '../schedule';
 import { buildSegments, totalSeconds, type Segment } from '../segments';
+import { prepSpeech, toSpeech } from '../speech';
 import { saveSetting, settings } from '../state';
 import { counts } from '../stats';
 import {
@@ -30,6 +31,8 @@ import { app, ask, esc, fmtDuration, fmtMinutes, repere, toast } from '../ui';
 
 /** Au-delà de cette absence, la séance est mise en pause à l'heure du départ. */
 export const MAX_ABSENCE_MS = 5 * 60_000;
+/** La mise en place attend la fin de l'explication vocale, au plus ce délai en plus. */
+const MAX_PREP_HOLD_MS = 20_000;
 
 /** Ce qui est sauvegardé pour reprendre une séance si iOS ferme l'app. */
 export interface LiveSnapshot {
@@ -64,6 +67,9 @@ interface Live extends LiveSnapshot {
   exKey: number;
   segKey: string;
   refs: Refs | null;
+  /** Mise en place retenue tant que la voix explique (segment concerné, début de l'attente). */
+  holdSeg: string;
+  holdFrom: number;
 }
 
 let live: Live | null = null;
@@ -92,7 +98,7 @@ export const planDuration = (items: PlanItem[]) => items.reduce((t, i) => t + to
  * Tout est synchrone jusqu'au démarrage : iOS n'autorise son et voix que dans le toucher.
  */
 export function openSession(type: SessionType, origin: SessionRecord['origin'], fromTap: boolean) {
-  const plan = buildPlan(type, settings.phase, settings.rotation, isoDate(new Date()));
+  const plan = buildPlan(type, settings.phase, settings.rotation, isoDate(new Date()), { voice: voiceOn(type) });
   const start = () => {
     const now = Date.now();
     begin({
@@ -123,7 +129,7 @@ export function openSession(type: SessionType, origin: SessionRecord['origin'], 
 function begin(snap: LiveSnapshot) {
   unlockAudio();
   keepAwake(true);
-  live = { ...snap, hiddenAt: null, timer: 0, lastWhole: -1, exKey: -1, segKey: '', refs: null };
+  live = { ...snap, hiddenAt: null, timer: 0, lastWhole: -1, exKey: -1, segKey: '', refs: null, holdSeg: '', holdFrom: 0 };
   live.timer = window.setInterval(tick, 200);
   persist();
   tick();
@@ -181,11 +187,31 @@ function tick() {
   // App cachée : rien n'avance ici, la règle d'absence s'applique au retour (onVisibility).
   if (!l || l.hiddenAt !== null) return;
   const now = Date.now();
+  holdPrepForVoice(l, now);
   const { state, events } = advance(l.run, now);
   l.run = state;
   feedback(l, events);
   if (l.run.finished) return void finish(true);
   render(l, now);
+}
+
+/**
+ * Si l'explication vocale n'est pas finie à la fin de la mise en place, le chrono
+ * attend (la durée estimée de lecture peut être courte pour la voix de l'iPhone).
+ */
+function holdPrepForVoice(l: Live, now: number) {
+  const seg = currentSegment(l.run);
+  if (!seg || seg.kind !== 'prep' || l.run.pausedAt !== null || !voiceOn(l.type) || !isSpeaking()) return;
+  const segId = `${l.run.ex}:${l.run.seg}`;
+  if (l.holdSeg !== segId) {
+    l.holdSeg = segId;
+    l.holdFrom = 0;
+  }
+  const holdAt = l.run.segStart + seg.seconds * 1000 - 500;
+  if (now < holdAt) return;
+  l.holdFrom ||= now;
+  if (now - l.holdFrom > MAX_PREP_HOLD_MS) return;
+  l.run = { ...l.run, segStart: l.run.segStart + (now - holdAt) };
 }
 
 /** Son et flash de fin d'étape. Après un rattrapage (écran verrouillé), un seul signal. */
@@ -283,8 +309,19 @@ function mountExercise(l: Live) {
   l.lastWhole = -1;
 
   l.refs.pause.addEventListener('click', () => control((s, now) => ({ state: s.pausedAt === null ? pause(s, now) : resume(s, now), events: [] })));
-  l.refs.step.addEventListener('click', () => control(skipSegment));
-  $('skip').addEventListener('click', () => control(skipExercise));
+  // « Je suis prêt » ou « Exercice suivant » coupent l'explication en cours.
+  l.refs.step.addEventListener('click', () =>
+    control((s, now) => {
+      if (currentSegment(s)?.kind === 'prep') stopSpeech();
+      return skipSegment(s, now);
+    }),
+  );
+  $('skip').addEventListener('click', () =>
+    control((s, now) => {
+      stopSpeech();
+      return skipExercise(s, now);
+    }),
+  );
   $('stop').addEventListener('click', stopFlow);
 }
 
@@ -361,16 +398,21 @@ function updateClock(l: Live, now: number) {
   r.bar.style.width = `${Math.min(100, (done / total) * 100)}%`;
 }
 
-/** Annonces vocales : nom de l'exercice, changements, respiration, longues tenues. Les répétitions courtes n'ont que les bips. */
+/**
+ * Annonces vocales. Mise en place : l'explication complète (placement, consignes,
+ * erreur à éviter). Ensuite : changements, respiration, repos entre séries, longues
+ * tenues, et chaque répétition pour les exercices qui le demandent (rouleau).
+ */
 function announce(l: Live, seg: Segment) {
   if (!voiceOn(l.type)) return;
-  const ex = EXERCISES[l.items[l.run.ex].exerciseId];
+  const item = l.items[l.run.ex];
+  if (seg.kind === 'prep') return speak(prepSpeech(EXERCISES[item.exerciseId]), { interrupt: true });
   let text = '';
-  if (seg.kind === 'prep') text = ex.name;
-  else if (seg.kind === 'switch' || seg.kind === 'inhale' || seg.kind === 'exhale') text = seg.label;
+  if (seg.kind === 'switch' || seg.kind === 'inhale' || seg.kind === 'exhale') text = seg.label;
   else if (seg.label === 'Repos entre séries') text = `Repos, ${seg.seconds} secondes`;
+  else if ((seg.kind === 'work' || seg.kind === 'rest') && 'voiceReps' in item.dose && item.dose.voiceReps) text = seg.label;
   else if (seg.kind === 'work' && seg.seconds >= 10) text = `${seg.label}, ${seg.seconds} secondes`;
-  speak(text);
+  speak(toSpeech(text));
 }
 
 /* ---------------- Arrêt, fin, absence ---------------- */

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { EXERCISES } from './exercises';
 import { buildPlan } from './routines';
 import { buildSegments, totalSeconds } from './segments';
-import { PREP_MARGIN, prepSeconds, prepSpeech, speechSeconds, toSpeech } from './speech';
+import { PREP_MARGIN, prepSeconds, prepSpeech, segmentSpeech, speechSeconds, toSpeech } from './speech';
 
 describe('voix', () => {
   test('explication de mise en place : nom, consignes, erreur à éviter', () => {
@@ -33,6 +33,31 @@ describe('voix', () => {
   });
 });
 
+describe('voix à chaque changement d’état', () => {
+  const said = (id: string) => buildSegments(EXERCISES[id].doses[1]).filter((s) => s.kind !== 'prep').map(segmentSpeech);
+
+  test('chaque étape de chaque exercice a son annonce', () => {
+    for (const id of Object.keys(EXERCISES)) expect(said(id).every((t) => t.length > 0), id).toBe(true);
+  });
+
+  test('tenues et relâchements', () => {
+    expect(said('cobra').slice(0, 3)).toEqual(['Tiens', 'Relâche', 'Tiens']);
+    expect(said('rouleau').slice(0, 3)).toEqual(['Étends', 'Relâche', 'Étends']);
+    expect(said('anges').slice(0, 2)).toEqual(['Monte', 'Descends']);
+    expect(said('openbook').slice(0, 2)).toEqual(['Vas-y', 'Relâche']);
+    expect(said('resp').slice(0, 2)).toEqual(['Inspire', 'Expire']);
+  });
+
+  test('changements, repos entre séries, longues tenues', () => {
+    expect(said('ytw')).toContain('Change : lettre T');
+    expect(said('ytw')).toContain('Repos, 10 secondes');
+    expect(said('openbook')).toContain('Change de côté');
+    expect(said('porte')[0]).toBe('Tiens, 30 secondes');
+    expect(said('porte')).toContain('Change : coude à 120 degrés');
+    expect(said('elong').slice(0, 2)).toEqual(['Tiens, 20 secondes', 'Relâche, 10 secondes']);
+  });
+});
+
 describe('exercices 1 et 2', () => {
   test('exo 1 : 5 s de pause entre les deux séries de respirations', () => {
     const rests = buildSegments(EXERCISES.resp.doses[1]).filter((s) => s.label === 'Repos entre séries');
@@ -40,12 +65,15 @@ describe('exercices 1 et 2', () => {
     expect(rests[0].seconds).toBe(5);
   });
 
-  test('exo 2 : la voix annonce « Étends » et « Relâche » à chaque répétition', () => {
-    const dose = EXERCISES.rouleau.doses[1];
-    expect('voiceReps' in dose && dose.voiceReps).toBe(true);
-    const labels = buildSegments(dose).map((s) => s.label);
-    expect(labels.filter((l) => l === 'Étends')).toHaveLength(15);
-    expect(labels.filter((l) => l === 'Relâche')).toHaveLength(12);
+  test('Y-T-W : 10 s de repos entre les deux tours', () => {
+    const rests = buildSegments(EXERCISES.ytw.doses[1]).filter((s) => s.label === 'Repos entre séries');
+    expect(rests.map((s) => s.seconds)).toEqual([10]);
+    expect(buildSegments(EXERCISES.ytw.doses[2]!).find((s) => s.label === 'Repos entre séries')?.seconds).toBe(10);
+  });
+
+  test('cobra : relâche de 3 s, aussi en phase 2', () => {
+    expect(EXERCISES.cobra.doses[1]).toMatchObject({ rest: 3 });
+    expect(EXERCISES.cobra.doses[2]).toMatchObject({ rest: 3 });
   });
 
   test('durées avec la voix (info)', () => {

@@ -5,7 +5,7 @@ import { buildPlan, SESSION_LABELS, SESSION_SHORT, type PlanItem, type RotationS
 import { navigate } from '../router';
 import { isoDate } from '../schedule';
 import { buildSegments, totalSeconds, type Segment } from '../segments';
-import { prepSpeech, toSpeech } from '../speech';
+import { prepSpeech, segmentSpeech } from '../speech';
 import { saveSetting, settings } from '../state';
 import { counts } from '../stats';
 import {
@@ -220,7 +220,7 @@ function feedback(l: Live, events: RunEvent[]) {
   const last = ends.at(-1);
   if (!last) return;
   flash(last.kind === 'work' ? 'end' : 'go');
-  if (soundOn(l.type)) beep(last.kind === 'work' ? 523 : 880, 0.25);
+  if (soundOn(l.type)) beep(last.kind === 'work' ? 523 : 880, voiceOn(l.type) ? 0.12 : 0.25);
 }
 
 function flash(kind: 'end' | 'go') {
@@ -400,19 +400,14 @@ function updateClock(l: Live, now: number) {
 
 /**
  * Annonces vocales. Mise en place : l'explication complète (placement, consignes,
- * erreur à éviter). Ensuite : changements, respiration, repos entre séries, longues
- * tenues, et chaque répétition pour les exercices qui le demandent (rouleau).
+ * erreur à éviter). Ensuite, sur tous les exercices, chaque changement d'état
+ * (« Tiens », « Relâche », « Change de côté »…). Une annonce coupe la précédente :
+ * la voix dit toujours l'étape en cours, jamais une étape déjà passée.
  */
 function announce(l: Live, seg: Segment) {
   if (!voiceOn(l.type)) return;
-  const item = l.items[l.run.ex];
-  if (seg.kind === 'prep') return speak(prepSpeech(EXERCISES[item.exerciseId]), { interrupt: true });
-  let text = '';
-  if (seg.kind === 'switch' || seg.kind === 'inhale' || seg.kind === 'exhale') text = seg.label;
-  else if (seg.label === 'Repos entre séries') text = `Repos, ${seg.seconds} secondes`;
-  else if ((seg.kind === 'work' || seg.kind === 'rest') && 'voiceReps' in item.dose && item.dose.voiceReps) text = seg.label;
-  else if (seg.kind === 'work' && seg.seconds >= 10) text = `${seg.label}, ${seg.seconds} secondes`;
-  speak(toSpeech(text));
+  const text = seg.kind === 'prep' ? prepSpeech(EXERCISES[l.items[l.run.ex].exerciseId]) : segmentSpeech(seg);
+  speak(text, { interrupt: true });
 }
 
 /* ---------------- Arrêt, fin, absence ---------------- */

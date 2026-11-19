@@ -46,7 +46,7 @@ L'app calcule les créneaux et génère un fichier `.ics` à importer une fois d
 Les exercices sont des données (fichier `exercises.ts`), pas du code en dur. Chaque exercice a : id, nom, illustration (SVG fourni dans `assets/illustrations/`), consignes (3-4 lignes courtes), erreur à éviter, type de dose, dose par phase.
 
 Types de dose à gérer par le chronomètre :
-- **Tenues** : n répétitions × tenue de x s, repos de y s entre deux (ex. cobra 10 × 5 s, repos 5 s).
+- **Tenues** : n répétitions × tenue de x s, repos de y s entre deux (ex. cobra 10 × 5 s, relâche 3 s).
 - **Répétitions par côté** : n répétitions côté gauche, puis annonce « change de côté ».
 - **Tenue simple** : x s, éventuellement × côtés × positions (ex. porte 30 s × 2 hauteurs × 2 côtés).
 - **Respirations** : n cycles inspire 4 s / expire 6 s, avec guidage visuel.
@@ -57,10 +57,10 @@ Types de dose à gérer par le chronomètre :
 | # | Exercice | Illustration | Dose |
 | --- | --- | --- | --- |
 | 1 | Respiration 90/90, menton rentré | resp.svg | 2 × 5 respirations (4 s / 6 s), 5 s de pause entre les séries |
-| 2 | Extension sur rouleau | rouleau.svg | 3 niveaux × 5, tenue 3 s ; la voix annonce « Étends » et « Relâche » à chaque répétition |
+| 2 | Extension sur rouleau | rouleau.svg | 3 niveaux × 5, tenue 3 s |
 | 3 | Open book | openbook.svg | 8 par côté, tenue 2 s |
-| 4 | Y-T-W à plat ventre | ytw.svg | 2 tours × 8 par lettre, tenue 3 s |
-| 5 | Cobra thoracique | cobra.svg | 2 × 10, tenue 5 s, repos 5 s |
+| 4 | Y-T-W à plat ventre | ytw.svg | 2 tours × 8 par lettre, tenue 3 s, 10 s de repos entre les tours |
+| 5 | Cobra thoracique | cobra.svg | 2 × 10, tenue 5 s, relâche 3 s |
 | 6 | Anges au mur | anges.svg | 2 × 8, 4 s montée / 4 s descente |
 | 7 | Étirement à la porte | porte.svg | 30 s × 2 hauteurs × 2 côtés |
 | 8 | Auto-élongation debout | elong.svg | 5 × 20 s |
@@ -92,7 +92,7 @@ Un exercice par famille, en rotation automatique d'une séance à l'autre :
 - Mise en place avant chaque exercice : 10 s à la maison, 5 s en télétravail, 3 s au bureau.
 - Chronomètre de tenue en grand, décompte sonore des 3 dernières secondes (étapes de 5 s et plus), signal sonore court (Web Audio) et flash visuel en fin de tenue et en fin de repos. Pas de vibration : Safari iOS ne gère pas l'API Vibration.
 - Son désactivable. Le set discret du bureau est muet par défaut (réglage séparé).
-- Annonces vocales (maison et télétravail, désactivables) : pendant la mise en place, la voix explique l'exercice (nom, placement et consignes, erreur à éviter) ; la mise en place dure au moins le temps de cette explication, et le chrono attend la fin de la voix si elle parle plus lentement que prévu. « Je suis prêt » et « Exercice suivant » coupent l'explication. Ensuite : changements de côté ou de position, inspire/expire, repos entre séries, tenues de 10 s et plus, et chaque répétition pour les exercices qui le demandent (exo 2).
+- Annonces vocales (maison et télétravail, désactivables) : pendant la mise en place, la voix explique l'exercice (nom, placement et consignes, erreur à éviter) ; la mise en place dure au moins le temps de cette explication, et le chrono attend la fin de la voix si elle parle plus lentement que prévu. « Je suis prêt » et « Exercice suivant » coupent l'explication. Ensuite, sur tous les exercices, la voix annonce chaque changement d'état : « Tiens », « Relâche », « Étends », « Monte », « Descends », « Vas-y », « Inspire », « Expire », « Change de côté », « Change : lettre T »… Les étapes de 10 s et plus donnent leur durée (« Tiens, 30 secondes »), le repos entre séries aussi (« Repos, 10 secondes »). Chaque annonce coupe la précédente : la voix dit toujours l'étape en cours.
 - Boutons : pause, étape suivante (« Je suis prêt » pendant la mise en place), exercice suivant, arrêter.
 - Arrêter : la séance se met en pause et propose « Enregistrer et terminer », « Abandonner sans enregistrer » ou « Continuer ». Sans exercice fait, rien n'est enregistré.
 - Écran allumé pendant la séance (Screen Wake Lock API ; à vérifier en mode écran d'accueil sur la version d'iOS de l'iPhone).

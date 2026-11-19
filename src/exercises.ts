@@ -23,12 +23,10 @@ export type Dose =
       positionLabel?: string;
       holdLabel?: string;
       restLabel?: string;
-      /** La voix annonce chaque tenue et chaque relâchement (« Étends », « Relâche »). */
-      voiceReps?: boolean;
       note?: string;
     }
   /** n répétitions côté gauche, puis « change de côté ». hold = durée d'une répétition. */
-  | { kind: 'perSide'; reps: number; hold: number; rest: number; sets?: number; setRest?: number; voiceReps?: boolean; note?: string }
+  | { kind: 'perSide'; reps: number; hold: number; rest: number; sets?: number; setRest?: number; note?: string }
   /** Tenue simple de x s, × répétitions, × positions, × côtés. */
   | {
       kind: 'simpleHold';
@@ -60,11 +58,12 @@ const ytwPhase1: Dose = {
   hold: 3,
   rest: 2,
   sets: 2,
+  setRest: 10,
   positions: ['Y', 'T', 'W'],
   positionLabel: 'Lettre',
 };
 
-const cobraPhase1: Dose = { kind: 'holds', reps: 10, hold: 5, rest: 5, sets: 2 };
+const cobraPhase1: Dose = { kind: 'holds', reps: 10, hold: 5, rest: 3, sets: 2 };
 
 export const EXERCISES: Record<string, Exercise> = {
   resp: {
@@ -98,7 +97,6 @@ export const EXERCISES: Record<string, Exercise> = {
         positions: ['bas', 'milieu', 'haut'],
         positionLabel: 'Niveau',
         holdLabel: 'Étends',
-        voiceReps: true,
       },
     },
   },

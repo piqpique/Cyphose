@@ -1,7 +1,7 @@
 import { addSession, deleteSession, kvDel, kvSet, type SessionRecord } from '../db';
 import { beep, keepAwake, speak, stopSpeech, unlockAudio } from '../device';
 import { EXERCISES } from '../exercises';
-import { buildPlan, SESSION_LABELS, type PlanItem, type RotationState, type SessionType } from '../routines';
+import { buildPlan, SESSION_LABELS, SESSION_SHORT, type PlanItem, type RotationState, type SessionType } from '../routines';
 import { navigate } from '../router';
 import { isoDate } from '../schedule';
 import { buildSegments, totalSeconds, type Segment } from '../segments';
@@ -25,7 +25,8 @@ import {
   type RunState,
   type SegmentEndEvent,
 } from '../timer';
-import { app, ask, esc, fmtDuration, fmtMinutes, toast } from '../ui';
+import { illustration } from '../illustrations';
+import { app, ask, esc, fmtDuration, fmtMinutes, repere, toast } from '../ui';
 
 /** Au-delà de cette absence, la séance est mise en pause à l'heure du départ. */
 export const MAX_ABSENCE_MS = 5 * 60_000;
@@ -109,8 +110,9 @@ export function openSession(type: SessionType, origin: SessionRecord['origin'], 
 
   app.innerHTML = `
   <main class="ready">
+    <p class="label">${fmtMinutes(planDuration(plan.items))} · ${plan.items.length} exercices</p>
     <h1>${SESSION_LABELS[type]}</h1>
-    <p class="muted">${fmtMinutes(planDuration(plan.items))} · ${plan.items.map((i) => esc(EXERCISES[i.exerciseId].name)).join(' · ')}</p>
+    <p class="muted">${plan.items.map((i) => esc(EXERCISES[i.exerciseId].name)).join(' · ')}</p>
     <button class="primary big" id="go">Démarrer</button>
     <button class="link" id="home">Retour à l’accueil</button>
   </main>`;
@@ -139,8 +141,8 @@ export function renderResume(snap: LiveSnapshot, then: () => void) {
 
   app.innerHTML = `
   <main class="ready">
+    <p class="label">${SESSION_LABELS[s.type]}</p>
     <h1>Séance en cours</h1>
-    <p>${SESSION_LABELS[s.type]}</p>
     <p class="muted">${
       run.finished
         ? `Terminée pendant ton absence : ${done}/${total} exercices faits.`
@@ -161,8 +163,8 @@ export function renderResume(snap: LiveSnapshot, then: () => void) {
       title: 'Abandonner la séance ?',
       text: 'Elle ne sera pas enregistrée.',
       actions: [
-        { id: 'discard', label: 'Abandonner', style: 'danger' },
-        { id: 'back', label: 'Annuler', style: 'secondary' },
+        { id: 'discard', label: 'Abandonner', style: 'primary' },
+        { id: 'back', label: 'Annuler', style: 'link' },
       ],
     });
     if (ok !== 'discard') return;
@@ -196,9 +198,11 @@ function feedback(l: Live, events: RunEvent[]) {
 }
 
 function flash(kind: 'end' | 'go') {
-  document.body.classList.remove('flash-end', 'flash-go');
-  void document.body.offsetWidth;
-  document.body.classList.add(`flash-${kind}`);
+  const b = document.body;
+  b.classList.remove('flash-end', 'flash-go');
+  void b.offsetWidth;
+  b.classList.add(`flash-${kind}`);
+  b.addEventListener('animationend', () => b.classList.remove(`flash-${kind}`), { once: true });
 }
 
 function render(l: Live, now: number) {
@@ -230,20 +234,20 @@ function mountExercise(l: Live) {
   <main class="player">
     <header class="top">
       <div>
-        <p class="muted">${SESSION_LABELS[l.type]} · exercice ${l.run.ex + 1}/${l.items.length}</p>
-        <p class="muted small" id="left"></p>
+        <p class="label">${SESSION_SHORT[l.type]} · ${l.run.ex + 1}/${l.items.length}</p>
+        <p class="label" id="left"></p>
       </div>
-      <button class="link" id="stop">Arrêter</button>
+      <button class="secondary" id="stop">Arrêter</button>
     </header>
     <p class="banner" id="banner" hidden></p>
 
-    <figure class="illus"><img src="./illustrations/${esc(ex.illustration)}" alt="Illustration : ${esc(ex.name)}"></figure>
+    ${illustration(ex.illustration, `Illustration : ${ex.name}`)}
 
     <h1 class="exname">${esc(ex.name)}</h1>
     ${item.dose.note ? `<p class="note">${esc(item.dose.note)}</p>` : ''}
 
     <section class="clock">
-      <p class="label" id="label" aria-live="polite"></p>
+      <p class="label-step" id="label" aria-live="polite"></p>
       ${isBreath ? '<div class="breath-host" id="breath" aria-hidden="true"></div>' : ''}
       <p class="time" id="time" aria-hidden="true"></p>
       <p class="counter" id="counter"></p>
@@ -251,8 +255,8 @@ function mountExercise(l: Live) {
       <p class="muted next" id="next"></p>
     </section>
 
-    <ul class="cues">${ex.cues.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
-    <p class="avoid"><b>À éviter :</b> ${esc(ex.avoid)}</p>
+    <ol class="cues">${ex.cues.map((c) => `<li>${esc(c)}</li>`).join('')}</ol>
+    <p class="avoid"><span class="label">À éviter</span><span>${esc(ex.avoid)}</span></p>
 
     <footer class="controls">
       <button class="secondary" id="pause">Pause</button>
@@ -313,6 +317,7 @@ function updateSegment(l: Live, now: number, segChanged: boolean) {
   r.counter.textContent = seg.counter;
   r.next.textContent = `Ensuite : ${nextText(l)}`;
   r.pause.textContent = paused ? 'Reprendre' : 'Pause';
+  r.pause.className = paused ? 'primary' : 'secondary'; // en pause, reprendre est l'action principale
   r.step.textContent = seg.kind === 'prep' ? 'Je suis prêt' : 'Étape suivante';
 
   if (r.breath) {
@@ -384,12 +389,12 @@ async function stopFlow() {
     actions: done
       ? [
           { id: 'save', label: 'Enregistrer et terminer', style: 'primary' },
-          { id: 'discard', label: 'Abandonner sans enregistrer', style: 'danger' },
-          { id: 'continue', label: 'Continuer la séance', style: 'secondary' },
+          { id: 'discard', label: 'Abandonner sans enregistrer', style: 'secondary' },
+          { id: 'continue', label: 'Continuer la séance', style: 'link' },
         ]
       : [
-          { id: 'discard', label: 'Abandonner', style: 'danger' },
-          { id: 'continue', label: 'Continuer la séance', style: 'secondary' },
+          { id: 'discard', label: 'Abandonner', style: 'primary' },
+          { id: 'continue', label: 'Continuer la séance', style: 'link' },
         ],
   });
   if (live !== l) return;
@@ -437,6 +442,8 @@ function renderEnd(record: SessionRecord, id: number) {
   const counted = counts(record);
   app.innerHTML = `
   <main class="end">
+    ${repere()}
+    <p class="label">${SESSION_LABELS[record.type]}</p>
     <h1>Séance enregistrée</h1>
     <p class="big-num">${fmtDuration(record.durationSec)}</p>
     <p class="muted">${counted ? 'Elle compte dans ta semaine.' : 'Aucun exercice fait : elle ne compte pas dans tes statistiques.'}</p>
@@ -455,8 +462,8 @@ function renderEnd(record: SessionRecord, id: number) {
       title: 'Supprimer cette séance ?',
       text: 'Elle disparaîtra de l’historique et des statistiques.',
       actions: [
-        { id: 'del', label: 'Supprimer', style: 'danger' },
-        { id: 'back', label: 'Garder', style: 'secondary' },
+        { id: 'del', label: 'Supprimer', style: 'primary' },
+        { id: 'back', label: 'Garder', style: 'link' },
       ],
     });
     if (ok !== 'del') return;

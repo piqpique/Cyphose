@@ -9,6 +9,8 @@ App mobile personnelle (un seul utilisateur, pas de compte, pas de serveur) pour
 - Conséquence : une PWA iOS ne peut pas programmer de notifications locales. Les rappels sont délégués au **Calendrier iOS** via un fichier `.ics` généré par l'app (voir section 2).
 - Stockage local : IndexedDB, avec demande de stockage persistant (`navigator.storage.persist()`). Aucune donnée ne sort du téléphone. L'export CSV sert de sauvegarde.
 - Le dépôt est public : n'y mettre aucune donnée personnelle (ni export CSV, ni historique).
+- Charte : design system ROBIN.PIQUET, thème encre. Polices Archivo et Fragment Mono embarquées (licence OFL dans `public/fonts/`), donc disponibles hors ligne. Couleurs encre, canard, crème et ambre ; angles quasi droits, aucune ombre sauf le focus ; pas de jeu d'icônes (onglets en libellés, le point ambre marque l'onglet actif) ; un seul bouton ambre par écran ; chiffres, labels et chronomètre en Fragment Mono.
+- Illustrations : style des schémas de la charte (traits crème sur `surface-raised`, ambre pour ce qui bouge, étiquettes Fragment Mono 10 px), converties par `scripts/brand-illustrations.mjs` et intégrées en SVG dans la page pour utiliser les polices de la charte. Icône d'app : le repère ambre sur canard (le bloc-marque n'est jamais un avatar).
 
 ## 1. Types de journée
 

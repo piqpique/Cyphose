@@ -98,7 +98,7 @@ export async function renderHistory() {
   <main class="with-tabs history">
     <h1>Historique</h1>
 
-    <section class="card">
+    <section class="card bloc">
       <h2>Cette semaine</h2>
       <div class="stats">
         <div><span class="num">${cur.homeDays}<small>/7</small></span><span class="muted">jours avec routine maison · objectif ${goal.goalText}</span></div>
@@ -180,8 +180,8 @@ export async function renderHistory() {
         title: 'Supprimer cette séance ?',
         text: 'Elle disparaîtra de l’historique et des statistiques.',
         actions: [
-          { id: 'del', label: 'Supprimer', style: 'danger' },
-          { id: 'back', label: 'Garder', style: 'secondary' },
+          { id: 'del', label: 'Supprimer', style: 'primary' },
+          { id: 'back', label: 'Garder', style: 'link' },
         ],
       });
       if (ok !== 'del') return;

@@ -9,6 +9,14 @@ export const SESSION_LABELS: Record<SessionType, string> = {
   teletravail: 'Micro-séance télétravail',
 };
 
+/** Libellé court (en-tête du lecteur). */
+export const SESSION_SHORT: Record<SessionType, string> = {
+  maison: 'Routine maison',
+  'maison-courte': 'Routine courte',
+  bureau: 'Micro bureau',
+  teletravail: 'Micro télétravail',
+};
+
 export interface PlanItem {
   exerciseId: string;
   dose: Dose;

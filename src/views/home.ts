@@ -4,7 +4,7 @@ import { buildPlan, type SessionType } from '../routines';
 import { DAY_LABELS, dayKind, fmtMin, isoDate, mondayOf, nextSlot, type DayType } from '../schedule';
 import { saveSetting, setOverride, setPhase, settings } from '../state';
 import { weekStats } from '../stats';
-import { app, bindTabs, esc, fmtMinutes, tabbar, toast } from '../ui';
+import { app, bindTabs, esc, fmtDay, fmtMinutes, tabbar, toast } from '../ui';
 import { openSession, planDuration } from './player';
 
 const durationOf = (type: SessionType) => fmtMinutes(planDuration(buildPlan(type, settings.phase, settings.rotation).items));
@@ -40,9 +40,13 @@ export async function renderHome() {
 
   app.innerHTML = `
   <main class="home with-tabs">
-    <header>
+    <header class="entete">
+      <div class="entete-haut">
+        <span class="marque" aria-label="ROBIN.PIQUET">Robin<span class="point" aria-hidden="true">.</span>Piquet</span>
+        <span class="label">${esc(fmtDay(now))}</span>
+      </div>
       <h1>Cyphose</h1>
-      <p class="muted">Phase ${settings.phase} · ${phase.name} · ${phaseWeekLabel(settings.phase, settings.phaseStart, today)}</p>
+      <p class="label">Phase ${settings.phase} · ${phase.name} · ${phaseWeekLabel(settings.phase, settings.phaseStart, today)}</p>
     </header>
 
     ${
@@ -51,8 +55,8 @@ export async function renderHome() {
       <h2>Passer en phase ${proposal.next} ?</h2>
       <p>Tu as fait ${proposal.weeks} semaines en phase ${settings.phase}. Passe à la phase ${proposal.next} (${PHASES[proposal.next].name.toLowerCase()}) si :</p>
       <p class="criterion">${esc(proposal.criterion)}</p>
-      <button class="primary" id="phase-yes">C’est validé : passer en phase ${proposal.next}</button>
-      <button class="secondary" id="phase-later">Pas encore (redemander dans 7 jours)</button>
+      <button class="secondary" id="phase-yes">C’est validé : passer en phase ${proposal.next}</button>
+      <button class="link" id="phase-later">Pas encore, redemander dans 7 jours</button>
     </section>`
         : ''
     }
@@ -60,7 +64,7 @@ export async function renderHome() {
     <section class="card">
       <h2>Aujourd’hui</h2>
       ${dayButtons}
-      <p>${nextText}</p>
+      <p class="next-slot">${nextText}</p>
     </section>
 
     <section class="actions">
@@ -72,7 +76,7 @@ export async function renderHome() {
       ${phase.hint ? `<p class="muted center">${esc(phase.hint)}</p>` : ''}
     </section>
 
-    <section class="card">
+    <section class="card bloc">
       <h2>Cette semaine</h2>
       <div class="stats">
         <div><span class="num">${week.homeDays}<small>/7</small></span><span class="muted">jours avec routine maison · objectif ${phase.goalText}</span></div>

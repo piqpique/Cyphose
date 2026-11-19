@@ -14,6 +14,7 @@ import {
   type Weekday,
 } from '../schedule';
 import { saveSetting, setPhase, settings } from '../state';
+import { illustration } from '../illustrations';
 import { app, ask, bindTabs, esc, tabbar, toast } from '../ui';
 
 const PLANNING_TYPES: DayType[] = ['bureau', 'teletravail', 'conge'];
@@ -44,7 +45,7 @@ export function renderSettings() {
           ? '<button class="secondary" id="back2">Mon dos s’arrondit à nouveau : revenir en phase 2</button>'
           : ''
       }
-      <details><summary>Les 4 phases</summary><figure class="illus"><img src="./illustrations/phases.svg" alt="Les 4 phases du protocole et leurs critères de passage"></figure></details>
+      <details><summary>Les 4 phases</summary>${illustration('phases.svg', 'Les 4 phases du protocole et leurs critères de passage')}</details>
     </section>
 
     <section class="card settings">
@@ -88,10 +89,10 @@ export function renderSettings() {
 
     <section class="card settings">
       <h2>Poste de travail</h2>
-      <details><summary>Réglage du poste</summary><figure class="illus"><img src="./illustrations/poste.svg" alt="Réglage du poste : haut de l’écran au niveau des yeux, dos contre le dossier"></figure></details>
+      <details><summary>Réglage du poste</summary>${illustration('poste.svg', 'Réglage du poste : haut de l’écran au niveau des yeux, dos contre le dossier')}</details>
     </section>
 
-    <p class="muted center small">Version du ${esc(__BUILD__)}</p>
+    <p class="version">Version du ${esc(__BUILD__)}</p>
   </main>
   ${tabbar('settings')}`;
 
@@ -109,7 +110,7 @@ export function renderSettings() {
       text: 'Les doses de renforcement reprennent pour au moins 8 semaines.',
       actions: [
         { id: 'yes', label: 'Revenir en phase 2', style: 'primary' },
-        { id: 'no', label: 'Annuler', style: 'secondary' },
+        { id: 'no', label: 'Annuler', style: 'link' },
       ],
     });
     if (ok !== 'yes') return;

@@ -22,7 +22,8 @@ export const fmtTime = (ms: number) => {
 export interface AskAction {
   id: string;
   label: string;
-  style?: 'primary' | 'secondary' | 'danger';
+  /** Un seul « primary » par boîte ; « link » pour revenir en arrière. */
+  style?: 'primary' | 'secondary' | 'link';
 }
 
 /** Boîte de dialogue modale. Renvoie l'id du bouton touché, ou null si fermée autrement. */
@@ -65,24 +66,24 @@ export function toast(text: string) {
   toastTimer = window.setTimeout(() => el!.classList.remove('show'), 3500);
 }
 
-const TABS: { view: View; label: string; icon: string }[] = [
-  { view: 'home', label: 'Accueil', icon: '<path d="M4 11.5 12 5l8 6.5V20h-5.5v-5h-5v5H4z"/>' },
-  { view: 'history', label: 'Historique', icon: '<path d="M5 20V11M12 20V5M19 20v-6"/>' },
-  {
-    view: 'settings',
-    label: 'Réglages',
-    icon: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>',
-  },
+/** Charte : pas de jeu d'icônes. Les onglets sont des libellés mono ; le point de repère marque l'onglet actif. */
+const TABS: { view: View; label: string }[] = [
+  { view: 'home', label: 'Accueil' },
+  { view: 'history', label: 'Historique' },
+  { view: 'settings', label: 'Réglages' },
 ];
 
 /** Barre d'onglets du bas (absente pendant une séance). */
 export function tabbar(active: View): string {
   return `<nav class="tabs" aria-label="Navigation">${TABS.map(
     (t) =>
-      `<button data-nav="${t.view}" class="${t.view === active ? 'on' : ''}" ${t.view === active ? 'aria-current="page"' : ''}>
-        <svg viewBox="0 0 24 24" aria-hidden="true">${t.icon}</svg><span>${t.label}</span></button>`,
+      `<button data-nav="${t.view}" class="${t.view === active ? 'on' : ''}" ${t.view === active ? 'aria-current="page"' : ''}><span>${t.label}</span></button>`,
   ).join('')}</nav>`;
 }
+
+/** Le repère de marque (asset Marque/repere.svg) : ligne de mesure, deux embouts, point central, en ambre. */
+export const repere = (width = 141) =>
+  `<svg class="repere" viewBox="0 0 188 40" width="${width}" height="${Math.round((width * 40) / 188)}" aria-hidden="true"><path d="M6 8V32M182 8V32M6 20H182" stroke="#E08A2E" stroke-width="4" fill="none"/><circle cx="94" cy="20" r="9" fill="#E08A2E"/></svg>`;
 
 export function bindTabs(root: ParentNode = app) {
   root.querySelectorAll<HTMLButtonElement>('[data-nav]').forEach((b) =>
